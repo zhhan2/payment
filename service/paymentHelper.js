@@ -34,8 +34,7 @@ var decidePaymentGateway = function (type, currency) {
     if (_l.includes(['USD', 'EUR', 'AUD'],_l.toUpper(currency))) {
         return 'paypal';
     }
-    // return 'braintree';
-    return 'paypal';
+    return 'braintree';
 };
 
 var getPaypalPaymentBody = function(paymentInfo, cardType) {

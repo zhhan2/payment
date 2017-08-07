@@ -1,15 +1,27 @@
 'use strict';
 
 $(function () {
-    $('#pay-now').click(function(){
-		var paymentInfo = getPaymentInfo();
-		$.post(
-			"/create",
-			paymentInfo,
-			function(data, status){
-				alert("Data: " + data + "\nStatus: " + status);
-			});
-    });
+	// init braintree hosted fields
+	$.get(
+		'/braintree/clientToken',
+		{},
+		function (data, status) {
+			if (status = 'success') {
+				var token = data.content.clientToken;
+				braintree.client.create({
+					authorization: token
+				}, function(err, clientInstance) {
+					if (err) {
+						console.error(err);
+						return;
+					}
+					createHostedFields(clientInstance);
+				});
+			} else {
+				alert('Can not get braintree client token.');
+			}
+		}
+	)
 });
 
 // found at: http://webstandardssherpa.com/reviews/auto-detecting-credit-card-type/
@@ -46,4 +58,43 @@ function getPaymentInfo () {
 		expiryYear: $('#expiry-year').val(),
 		cvv: $('#cvv').val()
 	};
+}
+
+function createHostedFields(clientInstance) {
+  braintree.hostedFields.create({
+    client: clientInstance,
+    styles: {
+    },
+    fields: {
+      number: {
+        selector: '#card-number',
+		placeholder: '4111 1111 1111 1111'
+      },
+      cvv: {
+        selector: '#cvv',
+		placeholder: '123'
+      },
+      expirationMonth: {
+        selector: '#expiry-month',
+		placeholder: 'MM'
+      },
+      expirationYear: {
+        selector: '#expiry-year',
+		placeholder: 'YYYY'
+      }
+    }
+  }, function (err, hostedFieldsInstance) {
+    $('#payment-form').on('submit', function(evt){
+		evt.preventDefault();
+		console.log($('#card-number').val());
+		hostedFieldsInstance.tokenize(function (err, payload) {
+			if (err) {
+				console.error(err);
+				return;
+			}
+			console.log(payload.nonce);
+			alert('Submit your nonce to your server here!');
+      	});
+	});
+  });
 }

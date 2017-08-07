@@ -17,32 +17,54 @@ exports.create = function (req, res) {
 	if (paymentMethod == 'paypal') {
 		var paymentBody = paymentHelper.getPaypalPaymentBody(paymenInfo, cardType);
 		console.log(JSON.stringify(paymentBody));
-		paymentGateway.createPaypalPayment(paymentBody, function (error, paymentDetail) {
-			if (error) {
-				console.log(error);
-				res.send('error', { 'error': error });
+		paymentGateway.createPaypalPayment(paymentBody, function (err, paymentDetail) {
+			if (err) {
+				console.log(err);
+				return res.status(400).send({
+					status: 'fail',
+					message: 'Can create payment by this card.'
+				});
 			} else {
-				console.log(JSON.stringify(paymentDetail));
-				req.session.paymentId = paymentDetail.id;
-				res.send('create', { 'payment': paymentDetail });
+				var id = paymentDetail.id;
+				return res.status(200).send({
+					status: 'success',
+					paymentId: id
+				});
 			}
 		});
 	}
 	
 };
 
-exports.execute = function (req, res) {
-	var paymentId = req.session.paymentId;
-	var payerId = req.param('PayerID');
-
-	var details = { "payer_id": payerId };
-	var payment = paypal.payment.execute(paymentId, details, function (error, payment) {
-		if (error) {
-			console.log(error);
-			res.render('error', { 'error': error });
-		} else {
-			res.render('execute', { 'payment': payment });
+exports.getBraintreeToken = function (req, res) {
+	paymentGateway.getBraintreeClientToken({}, function (err, token){
+		if (err) {
+			return res.status(500).send({
+				status: 'fail',
+				message: 'Can not get braintree client token.'
+			});
 		}
+		return res.status(200).send({
+			status: 'success',
+			content: token
+		});
+	});
+}
+
+exports.check = function (req, res) {
+	var paymentId = req.params.paymentId;
+	paymentGateway.getPaypalPayment(paymentId, function(err, payment) {
+		if (err) {
+			console.log(err);
+			return res.status(400).send({
+				status: 'fail',
+				message: 'Can not get this payment.'
+			});
+		}
+		return res.status(200).send({
+			status: 'success',
+			payment: payment
+		});
 	});
 };
 

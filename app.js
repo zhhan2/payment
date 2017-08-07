@@ -40,9 +40,9 @@ if ('development' == app.get('env')) {
 router.get('/', function (req,res) {
     res.sendFile(path.join(__dirname, './public/html', 'index.html'));
 });
-
+router.get('/braintree/clientToken', routes.getBraintreeToken);
 router.post('/create', routes.create);
-router.get('/execute', routes.execute);
+router.get('/check/:paymentId', routes.check);
 router.get('/cancel', routes.cancel);
 
 app.use('/', router);
