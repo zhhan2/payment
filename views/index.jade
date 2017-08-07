@@ -1,22 +1,18 @@
 extends layout
 
-block content
-  h1 PayPal REST API
+block search
+  h1 Search Payment Record by Record Id
 
-  div#paypal
-    p Create a new PayPal Payment
-    form(action="/create")
-      input(type='hidden', name='method', value='paypal')
-      label(for='amount') Amount
-      input(type='text', id='amount', name='amount', required)
-      label(for='currency') Currency
-      input(type='text', id='currency', maxlength='3', placeholder='USD', name='currency', required)
-      label(for='description') Description
-      input(type='text', id='description', name='description', placeholder='Optional')
-      button(type='submit') Create Payment
+  div#search
+    form(action="/search")
+      label(for='recordId') Record Id
+      input(type='text', id='recordId', name='recordId', required)
+      button(type='submit') Search Payment
+
+block creditcard
+  h1 Search Payment Record by Record Id
 
   div#creditcard
-    p Create a new Credit Card Payment
     form(action="/create")
         input(type='hidden', name='method', value='credit_card')
         label(for='amount') Amount

@@ -1,6 +1,7 @@
 'use strict';
 
 var paymentGateway = require('../lib/creditCardPaymentGateway');
+var paymentHelper = require('../service/paymentHelper.js');
 
 // Routes
 
@@ -9,53 +10,25 @@ exports.index = function (req, res) {
 };
 
 exports.create = function (req, res) {
-	var method = req.param('method');
-
-	var payment = {
-		"intent": "sale",
-		"payer": {
-		},
-		"transactions": [{
-			"amount": {
-				"currency": req.param('currency'),
-				"total": req.param('amount')
-			},
-			"description": req.param('description')
-		}]
-	};
-
-	if (method === 'paypal') {
-		payment.payer.payment_method = 'paypal';
-		payment.redirect_urls = {
-			"return_url": "http://pprestnode.herokuapp.com/execute",
-			"cancel_url": "http://pprestnode.herokuapp.com/cancel"
-		};
-	} else if (method === 'credit_card') {
-		var funding_instruments = [
-			{
-				"credit_card": {
-					"type": req.param('type').toLowerCase(),
-					"number": req.param('number'),
-					"expire_month": req.param('expire_month'),
-					"expire_year": req.param('expire_year'),
-					"first_name": req.param('first_name'),
-					"last_name": req.param('last_name')
-				}
+	var paymenInfo = req.body;
+	var cardType = paymentHelper.getCreditCardType(paymenInfo.cardNumber);
+	var paymentMethod = paymentHelper.decidePaymentGateway(cardType, paymenInfo.currency);
+	console.log(paymentMethod);
+	if (paymentMethod == 'paypal') {
+		var paymentBody = paymentHelper.getPaypalPaymentBody(paymenInfo, cardType);
+		console.log(JSON.stringify(paymentBody));
+		paymentGateway.createPaypalPayment(paymentBody, function (error, paymentDetail) {
+			if (error) {
+				console.log(error);
+				res.send('error', { 'error': error });
+			} else {
+				console.log(JSON.stringify(paymentDetail));
+				req.session.paymentId = paymentDetail.id;
+				res.send('create', { 'payment': paymentDetail });
 			}
-		];
-		payment.payer.payment_method = 'credit_card';
-		payment.payer.funding_instruments = funding_instruments;
+		});
 	}
-
-	paypal.payment.create(payment, function (error, payment) {
-		if (error) {
-			console.log(error);
-			res.render('error', { 'error': error });
-		} else {
-			req.session.paymentId = payment.id;
-			res.render('create', { 'payment': payment });
-		}
-	});
+	
 };
 
 exports.execute = function (req, res) {
@@ -81,5 +54,5 @@ exports.cancel = function (req, res) {
 
 exports.init = function (config) {
 	paymentGateway.initPaypal(config.paypal);
-	// paymentGateway.initBraintree('sandbox', config.braintree);
+	paymentGateway.initBraintree('sandbox', config.braintree);
 };

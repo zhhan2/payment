@@ -1,6 +1,7 @@
 var express = require('express');
 var routes = require('./routes');
 var config = require('./config.js');
+var middleware = require('./middleware');
 var http = require('http');
 var path = require('path');
 var fs = require('fs');
@@ -35,11 +36,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 if ('development' == app.get('env')) {
     app.use(errorhandler());
 }
+// serve index.html
+router.get('/', function (req,res) {
+    res.sendFile(path.join(__dirname, './public/html', 'index.html'));
+});
 
-app.get('/', routes.index);
-app.get('/create', routes.create);
-app.get('/execute', routes.execute);
-app.get('/cancel', routes.cancel);
+router.post('/create', routes.create);
+router.get('/execute', routes.execute);
+router.get('/cancel', routes.cancel);
+
+app.use('/', router);
 
 http.createServer(app).listen(app.get('port'), function(){
     console.log('Express server listening on port ' + app.get('port'));
