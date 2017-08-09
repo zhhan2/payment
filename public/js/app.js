@@ -28,10 +28,122 @@ $(function() {
 		$('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#card-info-form"]').trigger('click');
 		$(this).hide();
+		console.log(getPaymentGateway());
+		createCardInfoForm(getPaymentGateway());
 	})
 
-    // init braintree hosted fields
-    $.get(
+    // $.get(
+    //     '/braintree/clientToken', {},
+    //     function(data, status) {
+    //         if (status = 'success') {
+    //             var token = data.content.clientToken;
+    //             braintree.client.create({
+    //                 authorization: token
+    //             }, function(err, clientInstance) {
+    //                 if (err) {
+    //                     console.error(err);
+    //                     return;
+    //                 }
+    //                 createHostedFields(clientInstance);
+    //             });
+    //         } else {
+    //             alert('Can not get braintree client token.');
+    //         }
+    //     }
+    // );
+});
+
+function getPaymentGateway() {
+	var currency = $('#currency').val().toLowerCase();
+	var cardType = $('#card-type').val();
+	if (cardType == 'amex') {
+		if (currency != 'usd') {
+			return 'unknow';
+		}
+		return 'paypal';
+	} else {
+		if (currency == 'usd' || currency == 'eur' || currency == 'aud') {
+			return 'paypal';
+		}
+		return 'braintree';
+	}
+}
+
+function getPaymentInfo() {
+    return {
+        amount: $('#amount').val(),
+        currency: $('#currency').val(),
+        firstName: $('#first-name').val(),
+        lastName: $('#last-name').val(),
+        phone: $('#phone-number').val()
+    };
+}
+
+function createCardInfoForm(gateway) {
+	if (gateway == 'paypal') {
+		return createPaypalForm();
+	} else if (gateway == 'braintree') {
+		createBraintreeForm();
+	} else {
+		alert('Invalid payment request.');
+	}
+}
+
+function createPaypalForm() {
+	$('#card-number').empty();
+	$('#expiry-month').empty();
+	$('#expiry-year').empty();
+	$('#cvv').empty();
+	var cardNumberInput = $('<input></input>');
+	cardNumberInput.addClass('form-control');
+	cardNumberInput.id = 'card-number';
+	cardNumberInput.attr('type', 'text');
+	cardNumberInput.attr('type', 'text');
+	cardNumberInput.attr('placeholder', 'Card number');
+	cardNumberInput.attr('required', true);
+	var expirationMonthInput = $('<input></input>');
+	expirationMonthInput.addClass('form-control');
+	expirationMonthInput.id = 'expiry-month';
+	expirationMonthInput.attr('type', 'text');
+	expirationMonthInput.attr('placeholder', 'MM');
+	expirationMonthInput.attr('maxlength', '2');
+	expirationMonthInput.attr('required', true);
+	var expirationYearInput = $('<input></input>');
+	expirationYearInput.addClass('form-control');
+	expirationYearInput.id = 'expiry-year';
+	expirationYearInput.attr('type', 'text');
+	expirationYearInput.attr('placeholder', 'YYYY');
+	expirationYearInput.attr('maxlength', '4');
+	expirationYearInput.attr('required', true);
+	var cvvInput = $('<input></input>');
+	cvvInput.addClass('form-control');
+	cvvInput.id = 'cvv';
+	cvvInput.attr('type', 'text');
+	cvvInput.attr('placeholder', '123');
+	cvvInput.attr('minlength', '3');
+	cvvInput.attr('maxlength', '3');
+	cvvInput.attr('required', true);
+	$('#card-number').removeClass('hosted-field');
+	$('#expiry-month').removeClass('hosted-field');
+	$('#expiry-year').removeClass('hosted-field');
+	$('#cvv').removeClass('hosted-field');
+	$('#card-number').append(cardNumberInput);
+	$('#expiry-month').append(expirationMonthInput);
+	$('#expiry-year').append(expirationYearInput);
+	$('#cvv').append(cvvInput);
+	return;
+}
+
+function createBraintreeForm() {
+	$('#card-number').empty();
+	$('#expiry-month').empty();
+	$('#expiry-year').empty();
+	$('#cvv').empty();
+	$('#card-number').addClass('hosted-field');
+	$('#expiry-month').addClass('hosted-field');
+	$('#expiry-year').addClass('hosted-field');
+	$('#cvv').addClass('hosted-field');
+	$.get(
         '/braintree/clientToken', {},
         function(data, status) {
             if (status = 'success') {
@@ -49,43 +161,11 @@ $(function() {
                 alert('Can not get braintree client token.');
             }
         }
-    )
-});
-
-// found at: http://webstandardssherpa.com/reviews/auto-detecting-credit-card-type/
-function getCreditCardType(accountNumber) {
-    //start without knowing the credit card type
-    var result = "unknown";
-
-    //first check for MasterCard
-    if (/^5[1-5]/.test(accountNumber)) {
-        result = "Mastercard";
-    }
-
-    //then check for Visa
-    else if (/^4/.test(accountNumber)) {
-        result = "Visa";
-    }
-
-    //then check for AmEx
-    else if (/^3[47]/.test(accountNumber)) {
-        result = "Amex";
-    }
-
-    return result;
-}
-
-function getPaymentInfo() {
-    return {
-        amount: $('#amount').val(),
-        currency: $('#currency').val(),
-        firstName: $('#first-name').val(),
-        lastName: $('#last-name').val(),
-        phone: $('#phone-number').val()
-    };
+    );
 }
 
 function createHostedFields(clientInstance) {
+	var gateway = getPaymentGateway();
     braintree.hostedFields.create({
         client: clientInstance,
         styles: {},
