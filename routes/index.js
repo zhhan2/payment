@@ -11,29 +11,45 @@ exports.index = function (req, res) {
 
 exports.create = function (req, res) {
 	var paymenInfo = req.body;
-	var cardType = paymentHelper.getCreditCardType(paymenInfo.cardNumber);
-	var paymentMethod = paymentHelper.decidePaymentGateway(cardType, paymenInfo.currency);
-	console.log(paymentMethod);
-	if (paymentMethod == 'paypal') {
-		var paymentBody = paymentHelper.getPaypalPaymentBody(paymenInfo, cardType);
-		console.log(JSON.stringify(paymentBody));
-		paymentGateway.createPaypalPayment(paymentBody, function (err, paymentDetail) {
-			if (err) {
-				console.log(err);
-				return res.status(400).send({
-					status: 'fail',
-					message: 'Can create payment by this card.'
-				});
-			} else {
-				var id = paymentDetail.id;
-				return res.status(200).send({
-					status: 'success',
-					paymentId: id
-				});
-			}
-		});
-	}
-	
+    var cardType = paymenInfo.cardType;
+    var currency = paymenInfo.currency;
+    var customerInfo = {
+        firstName: paymenInfo.firstName,
+        lastName: paymenInfo.lastName,
+        phone: paymenInfo.phone
+    };
+    console.log(customerInfo);
+    paymentGateway.createBrainTreeCustomer(customerInfo, paymenInfo.nonce, function(err, result){
+        return res.status(500).send({
+            status: 'fail',
+            message: 'Can not creat customer.'
+        });
+        console.log(result.customer);
+        return res.send({ status: 'success' });
+    });
+	// var paymentMethod = paymentHelper.decidePaymentGateway(cardType, currency);
+    // paymentGateway.createCustomer
+	// console.log(paymentMethod);
+	// if (paymentMethod == 'paypal') {
+		// var paymentBody = paymentHelper.getPaypalPaymentBody(paymenInfo, cardType);
+		// console.log(JSON.stringify(paymentBody));
+		// paymentGateway.createPaypalPayment(paymentBody, function (err, paymentDetail) {
+		// 	if (err) {
+		// 		console.log(err);
+		// 		return res.status(400).send({
+		// 			status: 'fail',
+		// 			message: 'Can create payment by this card.'
+		// 		});
+		// 	} else {
+		// 		var id = paymentDetail.id;
+		// 		return res.status(200).send({
+		// 			status: 'success',
+		// 			paymentId: id
+		// 		});
+		// 	}
+		// });
+	// }
+
 };
 
 exports.getBraintreeToken = function (req, res) {

@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html>
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <!-- Use minimum-scale=1 to enable GPU rasterization -->
-    <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1, minimum-scale=1"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1, minimum-scale=1">
     <title>CreditCard Payment</title>
     <!-- Latest compiled and minified CSS -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
@@ -15,10 +13,10 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
     <link rel="stylesheet" type="text/css" href="../css/style.css">
-    
+
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    
+
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <!-- braintree sdk -->
@@ -26,61 +24,83 @@
     <script src="https://js.braintreegateway.com/web/3.21.1/js/hosted-fields.js"></script>
 
     <script src="./js/app.js"></script>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="container">
-        <legend>New Payment</legend>
-        <p>Transaction Info</p>
-        <form class="form-horizontal" role="form" id="payment-form">
-            <fieldset>
+        <div class="row form-group">
+            <div class="col-xs-12">
+                <ul class="nav nav-pills nav-justified thumbnail setup-panel">
+                    <li class="active">
+                        <a href="#customer-info-form">
+                            <h4 class="list-group-item-heading">Step 1</h4>
+                            <p class="list-group-item-text">Input Customer Info</p>
+                        </a>
+                    </li>
+                    <li class="disabled">
+                        <a href="#card-info-form">
+                            <h4 class="list-group-item-heading">Step 2</h4>
+                            <p class="list-group-item-text">Input credit card Info</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <form class="form-horizontal" role="form" id="customer-info-form">
+        <fieldset>
             <div class="form-group">
                 <label class="col-sm-3 control-label" for="currency">Currency</label>
                 <div class="col-sm-3">
-                <input type="text" class="form-control" name="currency" id="currency" placeholder="Currency (e.g. USD, HKD)" required="true" maxlength="3">
+                    <input type="text" class="form-control" name="currency" id="currency" placeholder="Currency (e.g. USD, HKD)" required="true" maxlength="3">
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-3 control-label" for="amount">Amount</label>
                 <div class="col-sm-3">
-                <input type="number" class="form-control" name="amount" id="amount" placeholder="Amount" required="true">
+                    <input type="number" class="form-control" name="amount" id="amount" placeholder="Amount" required="true">
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-3 control-label" for="card-holder-first-name">First Name</label>
                 <div class="col-sm-3">
-                <input type="text" class="form-control" name="card-holder-first-name" id="card-holder-first-name" placeholder="First Name" required="true">
+                    <input type="text" class="form-control" id="first-name" placeholder="First Name" required="true">
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-3 control-label" for="card-holder-last-name">Last Name</label>
                 <div class="col-sm-3">
-                <input type="text" class="form-control" name="card-holder-last-name" id="card-holder-last-name" placeholder="Last Name" required="true">
+                    <input type="text" class="form-control" id="last-name" placeholder="Last Name" required="true">
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-3 control-label" for="card-number">Phone Number</label>
                 <div class="col-sm-3">
-                <input type="text" class="form-control" name="phone-number" id="phone-number" required="true">
+                    <input type="text" class="form-control" id="phone-number" required="true">
+                </div>
+                <div class="col-sm-3 ">
+                    <input type="submit" class="btn btn-success"></input>
                 </div>
             </div>
-            </fieldset>
-        <p>Card Info</p>
-            <label class="col-sm-3 control-label" for="card-number">Card Number</label>
-            <div id="card-number" class="col-sm-3 hosted-field"></div>
+        </fieldset>
+    </form>
+    <div class="container setup-content" id="card-info-form">
+        <label class="col-sm-3 control-label" for="card-number">Card Number</label>
+        <div id="card-number" class="col-sm-3 hosted-field"></div>
 
-            <label class="col-sm-3 control-label" for="expiry-month">Expiry Month</label>
-            <div id="expiry-month" class="col-sm-3 hosted-field"></div>
+        <label class="col-sm-3 control-label" for="expiry-month">Expiry Month</label>
+        <div id="expiry-month" class="col-sm-3 hosted-field"></div>
 
-            <label class="col-sm-3 control-label" for="expiry-year">Expiry Year</label>
-            <div id="expiry-year" class="col-sm-3 hosted-field"></div>
+        <label class="col-sm-3 control-label" for="expiry-year">Expiry Year</label>
+        <div id="expiry-year" class="col-sm-3 hosted-field"></div>
 
-            <label class="col-sm-3 control-label" for="cvv">CVV</label>
-            <div id="cvv" class="col-sm-3 hosted-field"></div>
+        <label class="col-sm-3 control-label" for="cvv">CVV</label>
+        <div id="cvv" class="col-sm-3 hosted-field"></div>
 
-            <div class="col-sm-3 button-container">
+        <div class="col-sm-3 button-container">
             <input type="submit" class="btn btn-success"></input>
-            </div>
-        </form>
+        </div>
     </div>
-  </body>
+</body>
+
 </html>

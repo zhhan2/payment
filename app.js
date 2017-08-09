@@ -41,8 +41,8 @@ router.get('/', function (req,res) {
     res.sendFile(path.join(__dirname, './public/html', 'index.html'));
 });
 router.get('/braintree/clientToken', routes.getBraintreeToken);
-router.post('/create', routes.create);
-router.get('/check/:paymentId', routes.check);
+router.post('/payment/create', routes.create);
+router.get('/payment/:paymentId', routes.check);
 router.get('/cancel', routes.cancel);
 
 app.use('/', router);
