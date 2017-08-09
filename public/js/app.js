@@ -67,34 +67,78 @@ function createHostedFields(clientInstance) {
     },
     fields: {
       number: {
-        selector: '#card-number',
-		placeholder: '4111 1111 1111 1111'
+				selector: '#card-number',
+				placeholder: '4111 1111 1111 1111',
+				value: '4111 1111 1111 1111'
       },
       cvv: {
         selector: '#cvv',
-		placeholder: '123'
+				placeholder: '123',
+				value: '123'
       },
       expirationMonth: {
         selector: '#expiry-month',
-		placeholder: 'MM'
+				placeholder: 'MM',
+				value: '12',
       },
       expirationYear: {
         selector: '#expiry-year',
-		placeholder: 'YYYY'
+				placeholder: 'YYYY',
+				value: '2019'
       }
     }
   }, function (err, hostedFieldsInstance) {
-    $('#payment-form').on('submit', function(evt){
-		evt.preventDefault();
-		console.log($('#card-number').val());
-		hostedFieldsInstance.tokenize(function (err, payload) {
-			if (err) {
-				console.error(err);
-				return;
+	hostedFieldsInstance.on('validityChange', function (event) {
+		var field = event.fields[event.emittedBy];
+		if (field.isValid) {
+			console.log(field.container.innerHTML);
+			if (event.emittedBy === 'expirationMonth' || event.emittedBy === 'expirationYear') {
+				if (!event.fields.expirationMonth.isValid || !event.fields.expirationYear.isValid) {
+					return;
+				}
+			} else if (event.emittedBy === 'number') {
+				$('#card-number').next('span').text('');
 			}
-			console.log(payload.nonce);
-			alert('Submit your nonce to your server here!');
-      	});
+			// Remove any previously applied error or warning classes
+			$(field.container).parents('.form-group').removeClass('has-warning');
+			$(field.container).parents('.form-group').removeClass('has-success');
+			// Apply styling for a valid field
+			$(field.container).parents('.form-group').addClass('has-success');
+		} else if (field.isPotentiallyValid) {
+			// Remove styling  from potentially valid fields
+			$(field.container).parents('.form-group').removeClass('has-warning');
+			$(field.container).parents('.form-group').removeClass('has-success');
+			if (event.emittedBy === 'number') {
+				$('#card-number').next('span').text('');
+			}
+		} else {
+			// Add styling to invalid fields
+			$(field.container).parents('.form-group').addClass('has-warning');
+			// Add helper text for an invalid card number
+			if (event.emittedBy === 'number') {
+				$('#card-number').next('span').text('Looks like this card number has an error.');
+			}
+		}
 	});
+
+	hostedFieldsInstance.on('cardTypeChange', function (event) {
+		// Handle a field's change, such as a change in validity or credit card type
+		if (event.cards.length === 1) {
+			$('#card-type').text(event.cards[0].niceType);
+		} else {
+			$('#card-type').text('Card');
+		}
+	});
+
+    $('#payment-form').on('submit', function(evt){
+			evt.preventDefault();
+			hostedFieldsInstance.tokenize(function (err, payload) {
+				if (err) {
+					alert('Card Info Fields Error: ' + err.message );
+					return;
+				}
+				console.log(payload);
+			});
+		});
   });
 }
