@@ -212,7 +212,9 @@ function createPaypalForm() {
 				paypalPaymentBody,
 				function(data, status) {
 					if (status = 'success') {
-						console.log(data);
+						alert('Success, payment record id: ' + data.payment._id);
+						// Go back to tab 1
+						$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
 					} else {
 						alert('Payment Error!');
 					}
@@ -344,7 +346,9 @@ function createHostedFields(clientInstance) {
 					paymentInfo,
 					function(data, status) {
 			            if (status = 'success') {
-							console.log(data);
+							alert('Success, payment record id: ' + data.payment._id);
+							// Go back to tab 1
+							$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
 			            } else {
 			                alert('Payment Error!');
 			            }

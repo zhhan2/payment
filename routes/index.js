@@ -113,19 +113,32 @@ exports.getBraintreeToken = function (req, res) {
 }
 
 exports.check = function (req, res) {
-	var paymentId = req.params.paymentId;
-	paymentGateway.getPaypalPayment(paymentId, function(err, payment) {
+	var paymentId = req.query.paymentId;
+    var firstName = req.query.firstName;
+    var lastName = req.query.lastName;
+	paymentHelper.getPaymentRecord({
+        _id: paymentId,
+        firstName: firstName,
+        lastName: lastName
+    }, function(err, payment) {
 		if (err) {
 			console.log(err);
-			return res.status(400).send({
+			return res.send({
 				status: 'fail',
-				message: 'Can not get this payment.'
+				message: 'Can not find this payment.'
 			});
 		}
-		return res.status(200).send({
-			status: 'success',
-			payment: payment
-		});
+        if (!payment) {
+    		return res.send({
+    			status: 'fail',
+    			message: 'Can not find this payment.'
+    		});
+        } else {
+            return res.status(200).send({
+    			status: 'success',
+    			payment: payment
+    		});
+        }
 	});
 };
 

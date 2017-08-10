@@ -36,13 +36,16 @@ app.use(express.static(path.join(__dirname, 'public')));
 if ('development' == app.get('env')) {
     app.use(errorhandler());
 }
-// serve index.html
+// serve html
 router.get('/', function (req,res) {
     res.sendFile(path.join(__dirname, './public/html', 'index.html'));
 });
+router.get('/check', function (req,res) {
+    res.sendFile(path.join(__dirname, './public/html', 'check.html'));
+});
 router.get('/braintree/clientToken', routes.getBraintreeToken);
 router.post('/payment/create', routes.create);
-router.get('/payment/:paymentId', routes.check);
+router.get('/payment', routes.check);
 router.get('/cancel', routes.cancel);
 
 app.use('/', router);

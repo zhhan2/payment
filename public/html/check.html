@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <!-- Use minimum-scale=1 to enable GPU rasterization -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0, maximum-scale=1, minimum-scale=1">
+    <title>Check Payment</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../css/style.css">
+
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    $(function() {
+        $('#query-form').on('submit', function(evt) {
+    		evt.preventDefault();
+            $('#result-panel').empty();
+    		var checkAPI = '/payment?';
+            checkAPI += 'paymentId=' + $('#payment-id').val();
+            checkAPI += '&firstName=' + $('#first-name').val();
+            checkAPI += '&lastName=' + $('#last-name').val();
+            $.get(checkAPI, function(data){
+                if (data.status != 'success') {
+                    alert(data.message);
+                    return;
+                };
+                var paymentDetail = {
+                    paymentId: data.payment._id,
+                    firstName: data.payment.firstName,
+                    phone: data.payment.phone,
+                    lastName: data.payment.lastName,
+                    createdDate: data.payment.createdDate,
+                    currency: data.payment.currency,
+                    price: data.payment.price,
+                };
+                var childNodes = [];
+                for (var k in paymentDetail) {
+                    var node = $('<div></div>');
+                    node.addClass('panel-body');
+                    node.text(k + ' : ' + paymentDetail[k]);
+                    $('#result-panel').append(node);
+                }
+
+                return;
+            });
+    	})
+    })
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Check Payment</h1>
+    </div>
+    <div class="container">
+        <a href="/">Back</a>
+    </div>
+    <form class="form-horizontal" role="form" id="query-form">
+        <fieldset>
+            <div class="form-group">
+                <label class="col-sm-3 control-label" for="currency">Payment Id</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control" id="payment-id" required="true">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">First Name</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="first-name" required="true">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-3 control-label">Last Name</label>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control" id="last-name" required="true">
+                </div>
+                <div class="col-sm-3 ">
+                    <input type="submit" class="btn btn-success"></input>
+                </div>
+            </div>
+        </fieldset>
+    </form>
+    <div class="container">
+        <h2>Paymen Detail</h2>
+        <div class="panel panel-default" id="result-panel">
+
+        </div>
+    </div>
+</body>
+
+</html>

@@ -1,7 +1,10 @@
 'use strict';
 
 var _l = require('lodash');
+var mongoose = require('mongoose');
 var Records = require('../models/records.js');
+var redis = require("redis");
+var client = redis.createClient();
 
 var getCreditCardType = function (accountNumber) {
 	//start without knowing the credit card type
@@ -81,20 +84,53 @@ var savePaymentRecord = function(gateway, paymentId, customerInfo, transactionIn
 	});
 	newRecord.save(function(err, record){
 		if (err) return cb(err);
+		var cacheKey = generateCacheKey({
+			_id: record._id,
+			firstName: record.firstName,
+			lastName: record.lastName
+		});
+		saveToCache(cacheKey, record);
 		return cb(null, record);
 	});
 };
 
-var getPaymentRecord = function(id, customerInfo) {
-	mongoose.model('records').findOne({
-		_id: id,
-		firstName: customerInfo.firstName,
-		lastName: customerInfo.lastName
-	}, function(err, record){
-		if (err) return cb(err)
-		return cb(null, record);
+var getPaymentRecord = function(query, cb) {
+	var cacheKey = generateCacheKey(query);
+	client.get(cacheKey, function(err, reply) {
+		if (err) return cb(err);
+	    if (_l.size(reply) > 0) {
+			return cb(null, JSON.parse(reply));
+		}
+		mongoose.model('Records').findOne({
+			_id: query._id,
+			firstName: query.firstName,
+			lastName: query.lastName
+		}, function(err, record){
+			if (err) return cb(err);
+			if (!_l.isUndefined(record)) {
+				saveToCache(cacheKey, record);
+				return cb(null, record);
+			}
+		});
 	});
 };
+
+var generateCacheKey = function(queryBody) {
+	var cacheKey = '';
+	var keys = _l.keys(queryBody);
+	keys = _l.sortedUniq(keys);
+	_l.forEach(keys, function(key, index){
+		cacheKey += key + '=' + queryBody[key];
+		cacheKey += index < _l.size(keys) - 1 ? '&' : '';
+	});
+	return cacheKey;
+};
+
+var saveToCache = function(cacheKey, object) {
+	client.set(cacheKey, JSON.stringify(object), 'EX', '3600');
+	return;
+};
+
 module.exports = {
     getCreditCardType: getCreditCardType,
     decidePaymentGateway: decidePaymentGateway,
