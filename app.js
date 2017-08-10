@@ -17,8 +17,6 @@ var router = express.Router();
 var app = express();
 routes.init(config.api);
 app.set('port', process.env.PORT || 3000);
-app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
 app.use(bodyParser.urlencoded({
     extended: true
 }));
