@@ -10,12 +10,12 @@ var cookieParser = require('cookie-parser');
 var methodOverride = require('method-override');
 var session = require('express-session');
 var errorhandler = require('errorhandler');
+var mongoose = require('mongoose');
 var router = express.Router();
 
 
 var app = express();
 routes.init(config.api);
-
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
 app.set('view engine', 'jade');
@@ -46,6 +46,18 @@ router.get('/payment/:paymentId', routes.check);
 router.get('/cancel', routes.cancel);
 
 app.use('/', router);
+
+
+mongoose.connect('mongodb://localhost/payment', function(err){
+    if(err) {
+        console.dir(err);
+        console.log("DB connection error");
+        mongoose.disconnect();
+        process.exit(1);
+        return;
+    }
+    console.log('DB connected');
+});
 
 http.createServer(app).listen(app.get('port'), function(){
     console.log('Express server listening on port ' + app.get('port'));

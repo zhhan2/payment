@@ -61,13 +61,14 @@ function generatePaypalPaymentBody() {
 			return {
 		        amount: $('#amount').val(),
 		        currency: $('#currency').val(),
+		        cardType: $('#card-type').val(),
 		        firstName: $('#first-name').val(),
 		        lastName: $('#last-name').val(),
 		        phone: $('#phone-number').val(),
 				cardNumber: cardInfo.cardNumber,
 				expiryMonth: cardInfo.expiryMonth,
-				expiryYear: cardInfo.expiryMonth,
-				cvv: cardInfo.expiryMonth
+				expiryYear: cardInfo.expiryYear,
+				cvv: cardInfo.cvv
 		    };
 		}
 		return;
@@ -106,8 +107,6 @@ function getCardInfoPaypal() {
 }
 
 function verifyCardNumber(cardType, cardNumber) {
-	console.log(cardNumber);
-	console.log(getCreditCardType(cardNumber));
 	return cardType == getCreditCardType(cardNumber);
 };
 
@@ -312,15 +311,6 @@ function createHostedFields(clientInstance) {
             }
         });
 
-        hostedFieldsInstance.on('cardTypeChange', function(event) {
-            // Handle a field's change, such as a change in validity or credit card type
-            if (event.cards.length === 1) {
-                $('#card-type').text(event.cards[0].niceType);
-            } else {
-                $('#card-type').text('Card');
-            }
-        });
-
         $('#card-info-form').on('submit', function(evt) {
             evt.preventDefault();
             hostedFieldsInstance.tokenize(function(err, payload) {
@@ -328,10 +318,27 @@ function createHostedFields(clientInstance) {
                     alert('Card Info Fields Error: ' + err.message);
                     return;
                 }
-				console.log(payload);
-				var paymentInfo = getPaymentInfo();
-				paymentInfo.cardType = payload.details.cardType;
-				paymentInfo.nonce = payload.nonce;
+				if ($('#card-type').val() != payload.details.cardType) {
+					alert('This Card is not ' + $('#card-type').val());
+					// Go back to tab 1
+					$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
+					return false;
+				}
+				var paymentInfo = {
+					gateway: 'braintree',
+					amount: $('#amount').val(),
+			        currency: $('#currency').val(),
+			        cardType: payload.details.cardType,
+			        firstName: $('#first-name').val(),
+			        lastName: $('#last-name').val(),
+			        phone: $('#phone-number').val(),
+					paymentMethodNonce: payload.nonce,
+					options: {
+						submitForSettlement: true
+					}
+				};
+				// paymentInfo.cardType = payload.details.cardType;
+				// paymentInfo.nonce = payload.nonce;
 				$.post(
 					'/payment/create',
 					paymentInfo,

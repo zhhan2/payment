@@ -10,46 +10,91 @@ exports.index = function (req, res) {
 };
 
 exports.create = function (req, res) {
-	var paymenInfo = req.body;
-    var cardType = paymenInfo.cardType;
-    var currency = paymenInfo.currency;
-    var customerInfo = {
-        firstName: paymenInfo.firstName,
-        lastName: paymenInfo.lastName,
-        phone: paymenInfo.phone
-    };
-    console.log(customerInfo);
-    paymentGateway.createBrainTreeCustomer(customerInfo, paymenInfo.nonce, function(err, result){
-        return res.status(500).send({
-            status: 'fail',
-            message: 'Can not creat customer.'
+	var paymentInfo = req.body;
+    var firstName = paymentInfo.firstName;
+    var lastName = paymentInfo.lastName;
+    var phone = paymentInfo.phone;
+    var currency = paymentInfo.currency;
+    var amount = paymentInfo.amount;
+    if (paymentInfo.gateway == 'paypal') {
+        var paymentBody = paymentHelper.getPaypalPaymentBody(paymentInfo);
+        paymentGateway.createPaypalPayment(paymentBody, function (err, paymentDetail) {
+			if (err) {
+				console.log(JSON.stringify(err));
+				return res.status(400).send({
+					status: 'fail',
+					message: 'Can create payment by this card.'
+				});
+			} else {
+				var paymentId = paymentDetail.id;
+                paymentHelper.savePaymentRecord(
+                    'paypal',
+                    paymentId,
+                    {
+                        firstName: firstName,
+                        lastName: lastName,
+                        phone: phone
+                    },
+                    {
+                        currency: currency,
+                        price: amount
+                    },
+                function(err, record){
+                    if (err) {
+                        return res.status(400).send({
+        					status: 'fail',
+        					message: 'Can not save payment record.'
+        				});
+                    }
+                    return res.status(200).send({
+    					status: 'success',
+    					payment: record
+    				});
+                });
+			}
+		});
+    } else if (paymentInfo.gateway == 'braintree') {
+        paymentGateway.createBraintreeTransaction(paymentInfo, function(err, result){
+            if (err) {
+				console.log(JSON.stringify(err));
+				return res.status(400).send({
+					status: 'fail',
+					message: 'Can create payment by this card.'
+				});
+			} else {
+                var paymentId = result.transaction.id;
+                paymentHelper.savePaymentRecord(
+                    'braintree',
+                    paymentId,
+                    {
+                        firstName: firstName,
+                        lastName: lastName,
+                        phone: phone
+                    },
+                    {
+                        currency: currency,
+                        price: amount
+                    },
+                function(err, record){
+                    if (err) {
+                        return res.status(400).send({
+        					status: 'fail',
+        					message: 'Can not save payment record.'
+        				});
+                    }
+                    return res.status(200).send({
+    					status: 'success',
+    					payment: record
+    				});
+                });
+            }
         });
-        console.log(result.customer);
-        return res.send({ status: 'success' });
-    });
-	// var paymentMethod = paymentHelper.decidePaymentGateway(cardType, currency);
-    // paymentGateway.createCustomer
-	// console.log(paymentMethod);
-	// if (paymentMethod == 'paypal') {
-		// var paymentBody = paymentHelper.getPaypalPaymentBody(paymenInfo, cardType);
-		// console.log(JSON.stringify(paymentBody));
-		// paymentGateway.createPaypalPayment(paymentBody, function (err, paymentDetail) {
-		// 	if (err) {
-		// 		console.log(err);
-		// 		return res.status(400).send({
-		// 			status: 'fail',
-		// 			message: 'Can create payment by this card.'
-		// 		});
-		// 	} else {
-		// 		var id = paymentDetail.id;
-		// 		return res.status(200).send({
-		// 			status: 'success',
-		// 			paymentId: id
-		// 		});
-		// 	}
-		// });
-	// }
-
+    } else {
+        return res.status(200).send({
+            status: 'fail',
+            message: 'Invalid gateway.'
+        });
+    }
 };
 
 exports.getBraintreeToken = function (req, res) {
