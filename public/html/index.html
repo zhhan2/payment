@@ -77,17 +77,17 @@
                 <label class="col-sm-3 control-label" for="card-holder-last-name">Card Type</label>
                 <div class="col-sm-3">
                     <select class="form-control col-sm-2" id="card-type" required="true">
-                        <option value="amex">Amex</option>
-                        <option value="visa">Visa</option>
-                        <option value="mastercard">MasterCard</option>
-                        <option value="jcb">JCB</option>
+                        <option value="Amex">Amex</option>
+                        <option value="Visa">Visa</option>
+                        <option value="Mastercard">MasterCard</option>
                     </select>
                 </div>
             </div>
             <div class="form-group">
-                <label class="col-sm-3 control-label" for="card-number">Phone Number</label>
+                <label class="col-sm-3 control-label">Phone Number</label>
                 <div class="col-sm-3">
-                    <input type="text" class="form-control" id="phone-number" required="true">
+                    <input type="text" class="form-control" id="phone-number" required="true"
+                    onkeypress="return event.charCode >= 48 && event.charCode <= 57" maxlength="15">
                 </div>
                 <div class="col-sm-3 ">
                     <input type="submit" class="btn btn-success"></input>
@@ -95,23 +95,27 @@
             </div>
         </fieldset>
     </form>
-    <div class="container setup-content" id="card-info-form">
-        <label class="col-sm-3 control-label" for="card-number">Card Number</label>
-        <div id="card-number" class="col-sm-3 hosted-field"></div>
-
-        <label class="col-sm-3 control-label" for="expiry-month">Expiry Month</label>
-        <div id="expiry-month" class="col-sm-3 hosted-field"></div>
-
-        <label class="col-sm-3 control-label" for="expiry-year">Expiry Year</label>
-        <div id="expiry-year" class="col-sm-3 hosted-field"></div>
-
-        <label class="col-sm-3 control-label" for="cvv">CVV</label>
-        <div id="cvv" class="col-sm-3 hosted-field"></div>
-
-        <div class="col-sm-3 button-container">
-            <input type="submit" class="btn btn-success"></input>
+    <form class="form-horizontal setup-content" id="card-info-form">
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="card-number">Card Number</label>
+            <div id="card-number" class="col-sm-3"></div>
         </div>
-    </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="expiry-month">Expiry Month</label>
+            <div id="expiry-month" class="col-sm-3"></div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="expiry-year">Expiry Year</label>
+            <div id="expiry-year" class="col-sm-3"></div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label" for="cvv">CVV</label>
+            <div id="cvv" class="col-sm-3"></div>
+            <div class="col-sm-3 button-container">
+                <input type="submit" class="btn btn-success"></input>
+            </div>
+        </div>
+    </form>
 </body>
 
 </html>

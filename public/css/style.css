@@ -17,6 +17,10 @@
     transition: all 300ms ease-in-out;
 }
 
+.button-container {
+    padding: 12px;
+}
+
 .helper-text {
     color: #8A6D3B;
     font-size: 12px;
