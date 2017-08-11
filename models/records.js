@@ -9,7 +9,9 @@ var recordsSchema = new Schema({
     currency: String,
     price: Number,
     createdDate: Date,
-    gatewayInfo: { type : mongoose.Schema.Types.Mixed }
+    gatewayInfo: {
+        type: mongoose.Schema.Types.Mixed
+    }
 });
 
 var Records = mongoose.model('Records', recordsSchema);

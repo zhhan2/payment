@@ -35,10 +35,10 @@ if ('development' == app.get('env')) {
     app.use(errorhandler());
 }
 // serve html
-router.get('/', function (req,res) {
+router.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, './public/html', 'index.html'));
 });
-router.get('/check', function (req,res) {
+router.get('/check', function(req, res) {
     res.sendFile(path.join(__dirname, './public/html', 'check.html'));
 });
 router.get('/braintree/clientToken', routes.getBraintreeToken);
@@ -49,8 +49,8 @@ router.get('/cancel', routes.cancel);
 app.use('/', router);
 
 
-mongoose.connect('mongodb://localhost/payment', function(err){
-    if(err) {
+mongoose.connect('mongodb://localhost/payment', function(err) {
+    if (err) {
         console.dir(err);
         console.log("DB connection error");
         mongoose.disconnect();
@@ -60,6 +60,6 @@ mongoose.connect('mongodb://localhost/payment', function(err){
     console.log('DB connected');
 });
 
-http.createServer(app).listen(app.get('port'), function(){
+http.createServer(app).listen(app.get('port'), function() {
     console.log('Express server listening on port ' + app.get('port'));
 });

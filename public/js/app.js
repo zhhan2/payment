@@ -1,130 +1,129 @@
 'use strict';
 
 $(function() {
-	var navListItems = $('ul.setup-panel li a');
-	var cardInfoTab = $('ul.setup-panel li:eq(1)');
-	var allWells = $('.setup-content');
+    var navListItems = $('ul.setup-panel li a');
+    var cardInfoTab = $('ul.setup-panel li:eq(1)');
+    var allWells = $('.setup-content');
 
     allWells.hide();
 
-    navListItems.click(function(e)
-    {
+    navListItems.click(function(e) {
         e.preventDefault();
         var target = $($(this).attr('href'));
         var item = $(this).closest('li');
         if (!item.hasClass('disabled')) {
             navListItems.closest('li').removeClass('active');
             item.addClass('active');
-			if ($(this).attr('href') == '#customer-info-form') {
-				cardInfoTab.addClass('disabled');
-			}
+            if ($(this).attr('href') == '#customer-info-form') {
+                cardInfoTab.addClass('disabled');
+            }
             allWells.hide();
             target.show();
         }
     });
 
-	$('#customer-info-form').on('submit', function(evt) {
-		evt.preventDefault();
-		var gateway = getPaymentGateway();
-		if (gateway == 'unknown') {
-			alert('American Express can only pay with USD.');
-			return false;
-		}
-		$('ul.setup-panel li:eq(1)').removeClass('disabled');
+    $('#customer-info-form').on('submit', function(evt) {
+        evt.preventDefault();
+        var gateway = getPaymentGateway();
+        if (gateway == 'unknown') {
+            alert('American Express can only pay with USD.');
+            return false;
+        }
+        $('ul.setup-panel li:eq(1)').removeClass('disabled');
         $('ul.setup-panel li a[href="#card-info-form"]').trigger('click');
-		$(this).hide();
-		createCardInfoForm(gateway);
-	})
+        $(this).hide();
+        createCardInfoForm(gateway);
+    })
 });
 
 function getPaymentGateway() {
-	var currency = $('#currency').val().toLowerCase();
-	var cardType = $('#card-type').val();
-	if (cardType == 'amex') {
-		if (currency != 'usd') {
-			return 'unknown';
-		}
-		return 'paypal';
-	} else {
-		if (currency == 'usd' || currency == 'eur' || currency == 'aud') {
-			return 'paypal';
-		}
-		return 'braintree';
-	}
+    var currency = $('#currency').val().toLowerCase();
+    var cardType = $('#card-type').val();
+    if (cardType == 'amex') {
+        if (currency != 'usd') {
+            return 'unknown';
+        }
+        return 'paypal';
+    } else {
+        if (currency == 'usd' || currency == 'eur' || currency == 'aud') {
+            return 'paypal';
+        }
+        return 'braintree';
+    }
 }
 
 function generatePaypalPaymentBody() {
-	var gateway = getPaymentGateway();
-	if (gateway == 'paypal') {
-		var cardInfo = getCardInfoPaypal();
-		if (cardInfo) {
-			return {
-		        amount: $('#amount').val(),
-		        currency: $('#currency').val(),
-		        cardType: $('#card-type').val(),
-		        firstName: $('#first-name').val(),
-		        lastName: $('#last-name').val(),
-		        phone: $('#phone-number').val(),
-				cardNumber: cardInfo.cardNumber,
-				expiryMonth: cardInfo.expiryMonth,
-				expiryYear: cardInfo.expiryYear,
-				cvv: cardInfo.cvv
-		    };
-		}
-		return;
-	}
+    var gateway = getPaymentGateway();
+    if (gateway == 'paypal') {
+        var cardInfo = getCardInfoPaypal();
+        if (cardInfo) {
+            return {
+                amount: $('#amount').val(),
+                currency: $('#currency').val(),
+                cardType: $('#card-type').val(),
+                firstName: $('#first-name').val(),
+                lastName: $('#last-name').val(),
+                phone: $('#phone-number').val(),
+                cardNumber: cardInfo.cardNumber,
+                expiryMonth: cardInfo.expiryMonth,
+                expiryYear: cardInfo.expiryYear,
+                cvv: cardInfo.cvv
+            };
+        }
+        return;
+    }
 }
 
 function getCardInfoPaypal() {
-	var cardType = $('#card-type').val();
-	var carNumberInputNode = $('#card-number-paypal');
-	var expiryMonthInputNode = $('#expiry-month-paypal');
-	var expiryYearInputNode = $('#expiry-year-paypal');
-	var cvvInputNode = $('#cvv-paypal');
-	if (!carNumberInputNode || !expiryMonthInputNode
-	|| !expiryYearInputNode || !cvvInputNode) {
-		console.log('Can not get card info.')
-		return false;
-	}
-	if (verifyCardNumber(cardType, carNumberInputNode.val())) {
-		if (verifyExpiryDate(expiryMonthInputNode.val(), expiryYearInputNode.val())) {
-			return {
-				cardNumber: carNumberInputNode.val(),
-				expiryMonth: expiryMonthInputNode.val(),
-				expiryYear: expiryYearInputNode.val(),
-				cvv: cvvInputNode.val()
-			}
-		} else {
-			alert('This card is expired.');
-			return false;
-		}
-	} else {
-		alert('This Card is not ' + cardType);
-		// Go back to tab 1
-		$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
-		return false;
-	}
+    var cardType = $('#card-type').val();
+    var carNumberInputNode = $('#card-number-paypal');
+    var expiryMonthInputNode = $('#expiry-month-paypal');
+    var expiryYearInputNode = $('#expiry-year-paypal');
+    var cvvInputNode = $('#cvv-paypal');
+    if (!carNumberInputNode || !expiryMonthInputNode ||
+        !expiryYearInputNode || !cvvInputNode) {
+        console.log('Can not get card info.')
+        return false;
+    }
+    if (verifyCardNumber(cardType, carNumberInputNode.val())) {
+        if (verifyExpiryDate(expiryMonthInputNode.val(), expiryYearInputNode.val())) {
+            return {
+                cardNumber: carNumberInputNode.val(),
+                expiryMonth: expiryMonthInputNode.val(),
+                expiryYear: expiryYearInputNode.val(),
+                cvv: cvvInputNode.val()
+            }
+        } else {
+            alert('This card is expired.');
+            return false;
+        }
+    } else {
+        alert('This Card is not ' + cardType);
+        // Go back to tab 1
+        $('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
+        return false;
+    }
 }
 
 function verifyCardNumber(cardType, cardNumber) {
-	return cardType == getCreditCardType(cardNumber);
+    return cardType == getCreditCardType(cardNumber);
 };
 
 function verifyExpiryDate(expiryMonth, expiryYear) {
-	if (!/^(0[1-9]|1[0-2])$/.test(expiryMonth)) {
-		return false;
-	}
-	expiryMonth = parseInt(expiryMonth);
-	expiryYear = parseInt(expiryYear);
-	var now = new Date();
-	var thisYear = parseInt(now.getFullYear());
-	var thisMonth = parseInt(now.getMonth());
-	if (expiryYear < thisYear) {
-		return false;
-	} else if (expiryYear == now.getFullYear()) {
-		return expiryMonth > thisMonth;
-	}
-	return true;
+    if (!/^(0[1-9]|1[0-2])$/.test(expiryMonth)) {
+        return false;
+    }
+    expiryMonth = parseInt(expiryMonth);
+    expiryYear = parseInt(expiryYear);
+    var now = new Date();
+    var thisYear = parseInt(now.getFullYear());
+    var thisMonth = parseInt(now.getMonth());
+    if (expiryYear < thisYear) {
+        return false;
+    } else if (expiryYear == now.getFullYear()) {
+        return expiryMonth > thisMonth;
+    }
+    return true;
 }
 
 function getCreditCardType(cardNumber) {
@@ -146,95 +145,95 @@ function getCreditCardType(cardNumber) {
 
 
 function createCardInfoForm(gateway) {
-	if (gateway == 'paypal') {
-		return createPaypalForm();
-	} else if (gateway == 'braintree') {
-		return createBraintreeForm();
-	} else {
-		alert('American Express can only pay with USD.');
-		return false;
-	}
+    if (gateway == 'paypal') {
+        return createPaypalForm();
+    } else if (gateway == 'braintree') {
+        return createBraintreeForm();
+    } else {
+        alert('American Express can only pay with USD.');
+        return false;
+    }
 }
 
 function createPaypalForm() {
-	$('#card-number').empty();
-	$('#expiry-month').empty();
-	$('#expiry-year').empty();
-	$('#cvv').empty();
-	var cardNumberInput = $('<input></input>');
-	cardNumberInput.addClass('form-control');
-	cardNumberInput.attr('id', 'card-number-paypal');
-	cardNumberInput.attr('type', 'text');
-	cardNumberInput.attr('type', 'text');
-	cardNumberInput.attr('placeholder', 'Card number');
-	cardNumberInput.attr('required', true);
-	cardNumberInput.keypress(checkNumericalInput);
-	var expirationMonthInput = $('<input></input>');
-	expirationMonthInput.addClass('form-control');
-	expirationMonthInput.attr('id', 'expiry-month-paypal');
-	expirationMonthInput.attr('type', 'text');
-	expirationMonthInput.attr('placeholder', 'MM');
-	expirationMonthInput.attr('maxlength', '2');
-	expirationMonthInput.attr('required', true);
-	expirationMonthInput.keypress(checkNumericalInput);
-	var expirationYearInput = $('<input></input>');
-	expirationYearInput.addClass('form-control');
-	expirationYearInput.attr('id', 'expiry-year-paypal');
-	expirationYearInput.attr('type', 'text');
-	expirationYearInput.attr('placeholder', 'YYYY');
-	expirationYearInput.attr('maxlength', '4');
-	expirationYearInput.attr('required', true);
-	expirationYearInput.keypress(checkNumericalInput);
-	var cvvInput = $('<input></input>');
-	cvvInput.addClass('form-control');
-	cvvInput.attr('id', 'cvv-paypal');
-	cvvInput.attr('type', 'text');
-	cvvInput.attr('placeholder', '123');
-	cvvInput.attr('minlength', '3');
-	cvvInput.attr('maxlength', '3');
-	cvvInput.attr('required', true);
-	cvvInput.keypress(checkNumericalInput);
-	$('#card-number').removeClass('hosted-field');
-	$('#expiry-month').removeClass('hosted-field');
-	$('#expiry-year').removeClass('hosted-field');
-	$('#cvv').removeClass('hosted-field');
-	$('#card-number').append(cardNumberInput);
-	$('#expiry-month').append(expirationMonthInput);
-	$('#expiry-year').append(expirationYearInput);
-	$('#cvv').append(cvvInput);
-	$('#card-info-form').on('submit', function(evt) {
-		evt.preventDefault();
-		var paypalPaymentBody = generatePaypalPaymentBody();
-		if (paypalPaymentBody) {
-			paypalPaymentBody.gateway = 'paypal';
-			$.post(
-				'/payment/create',
-				paypalPaymentBody,
-				function(data, status) {
-					if (status = 'success') {
-						alert('Success, payment record id: ' + data.payment._id);
-						// Go back to tab 1
-						$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
-					} else {
-						alert('Payment Error!');
-					}
-				}
-			);
-		}
-	});
-	return;
+    $('#card-number').empty();
+    $('#expiry-month').empty();
+    $('#expiry-year').empty();
+    $('#cvv').empty();
+    var cardNumberInput = $('<input></input>');
+    cardNumberInput.addClass('form-control');
+    cardNumberInput.attr('id', 'card-number-paypal');
+    cardNumberInput.attr('type', 'text');
+    cardNumberInput.attr('type', 'text');
+    cardNumberInput.attr('placeholder', 'Card number');
+    cardNumberInput.attr('required', true);
+    cardNumberInput.keypress(checkNumericalInput);
+    var expirationMonthInput = $('<input></input>');
+    expirationMonthInput.addClass('form-control');
+    expirationMonthInput.attr('id', 'expiry-month-paypal');
+    expirationMonthInput.attr('type', 'text');
+    expirationMonthInput.attr('placeholder', 'MM');
+    expirationMonthInput.attr('maxlength', '2');
+    expirationMonthInput.attr('required', true);
+    expirationMonthInput.keypress(checkNumericalInput);
+    var expirationYearInput = $('<input></input>');
+    expirationYearInput.addClass('form-control');
+    expirationYearInput.attr('id', 'expiry-year-paypal');
+    expirationYearInput.attr('type', 'text');
+    expirationYearInput.attr('placeholder', 'YYYY');
+    expirationYearInput.attr('maxlength', '4');
+    expirationYearInput.attr('required', true);
+    expirationYearInput.keypress(checkNumericalInput);
+    var cvvInput = $('<input></input>');
+    cvvInput.addClass('form-control');
+    cvvInput.attr('id', 'cvv-paypal');
+    cvvInput.attr('type', 'text');
+    cvvInput.attr('placeholder', '123');
+    cvvInput.attr('minlength', '3');
+    cvvInput.attr('maxlength', '3');
+    cvvInput.attr('required', true);
+    cvvInput.keypress(checkNumericalInput);
+    $('#card-number').removeClass('hosted-field');
+    $('#expiry-month').removeClass('hosted-field');
+    $('#expiry-year').removeClass('hosted-field');
+    $('#cvv').removeClass('hosted-field');
+    $('#card-number').append(cardNumberInput);
+    $('#expiry-month').append(expirationMonthInput);
+    $('#expiry-year').append(expirationYearInput);
+    $('#cvv').append(cvvInput);
+    $('#card-info-form').on('submit', function(evt) {
+        evt.preventDefault();
+        var paypalPaymentBody = generatePaypalPaymentBody();
+        if (paypalPaymentBody) {
+            paypalPaymentBody.gateway = 'paypal';
+            $.post(
+                '/payment/create',
+                paypalPaymentBody,
+                function(data, status) {
+                    if (status = 'success') {
+                        alert('Success, payment record id: ' + data.payment._id);
+                        // Go back to tab 1
+                        $('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
+                    } else {
+                        alert('Payment Error!');
+                    }
+                }
+            );
+        }
+    });
+    return;
 }
 
 function createBraintreeForm() {
-	$('#card-number').empty();
-	$('#expiry-month').empty();
-	$('#expiry-year').empty();
-	$('#cvv').empty();
-	$('#card-number').addClass('hosted-field');
-	$('#expiry-month').addClass('hosted-field');
-	$('#expiry-year').addClass('hosted-field');
-	$('#cvv').addClass('hosted-field');
-	$.get(
+    $('#card-number').empty();
+    $('#expiry-month').empty();
+    $('#expiry-year').empty();
+    $('#cvv').empty();
+    $('#card-number').addClass('hosted-field');
+    $('#expiry-month').addClass('hosted-field');
+    $('#expiry-year').addClass('hosted-field');
+    $('#cvv').addClass('hosted-field');
+    $.get(
         '/braintree/clientToken', {},
         function(data, status) {
             if (status = 'success') {
@@ -256,7 +255,7 @@ function createBraintreeForm() {
 }
 
 function createHostedFields(clientInstance) {
-	var gateway = getPaymentGateway();
+    var gateway = getPaymentGateway();
     braintree.hostedFields.create({
         client: clientInstance,
         styles: {},
@@ -320,41 +319,41 @@ function createHostedFields(clientInstance) {
                     alert('Card Info Fields Error: ' + err.message);
                     return;
                 }
-				if ($('#card-type').val() != payload.details.cardType) {
-					alert('This Card is not ' + $('#card-type').val());
-					// Go back to tab 1
-					$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
-					return false;
-				}
-				var paymentInfo = {
-					gateway: 'braintree',
-					amount: $('#amount').val(),
-			        currency: $('#currency').val(),
-			        cardType: payload.details.cardType,
-			        firstName: $('#first-name').val(),
-			        lastName: $('#last-name').val(),
-			        phone: $('#phone-number').val(),
-					paymentMethodNonce: payload.nonce,
-					options: {
-						submitForSettlement: true
-					}
-				};
-				// paymentInfo.cardType = payload.details.cardType;
-				// paymentInfo.nonce = payload.nonce;
-				$.post(
-					'/payment/create',
-					paymentInfo,
-					function(data, status) {
-			            if (status = 'success') {
-							alert('Success, payment record id: ' + data.payment._id);
-							// Go back to tab 1
-							$('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
-			            } else {
-			                alert('Payment Error!');
-			            }
-			        }
-				);
-				return;
+                if ($('#card-type').val() != payload.details.cardType) {
+                    alert('This Card is not ' + $('#card-type').val());
+                    // Go back to tab 1
+                    $('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
+                    return false;
+                }
+                var paymentInfo = {
+                    gateway: 'braintree',
+                    amount: $('#amount').val(),
+                    currency: $('#currency').val(),
+                    cardType: payload.details.cardType,
+                    firstName: $('#first-name').val(),
+                    lastName: $('#last-name').val(),
+                    phone: $('#phone-number').val(),
+                    paymentMethodNonce: payload.nonce,
+                    options: {
+                        submitForSettlement: true
+                    }
+                };
+                // paymentInfo.cardType = payload.details.cardType;
+                // paymentInfo.nonce = payload.nonce;
+                $.post(
+                    '/payment/create',
+                    paymentInfo,
+                    function(data, status) {
+                        if (status = 'success') {
+                            alert('Success, payment record id: ' + data.payment._id);
+                            // Go back to tab 1
+                            $('ul.setup-panel li a[href="#customer-info-form"]').trigger('click');
+                        } else {
+                            alert('Payment Error!');
+                        }
+                    }
+                );
+                return;
             });
         });
 
@@ -362,5 +361,5 @@ function createHostedFields(clientInstance) {
 }
 
 function checkNumericalInput(evt) {
-	return evt.charCode >= 48 && evt.charCode <= 57;
+    return evt.charCode >= 48 && evt.charCode <= 57;
 }

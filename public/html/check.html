@@ -16,40 +16,40 @@
     <!-- JQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script type="text/javascript">
-    $(function() {
-        $('#query-form').on('submit', function(evt) {
-    		evt.preventDefault();
-            $('#result-panel').empty();
-    		var checkAPI = '/payment?';
-            checkAPI += 'paymentId=' + $('#payment-id').val();
-            checkAPI += '&firstName=' + $('#first-name').val();
-            checkAPI += '&lastName=' + $('#last-name').val();
-            $.get(checkAPI, function(data){
-                if (data.status != 'success') {
-                    alert(data.message);
-                    return;
-                };
-                var paymentDetail = {
-                    paymentId: data.payment._id,
-                    firstName: data.payment.firstName,
-                    phone: data.payment.phone,
-                    lastName: data.payment.lastName,
-                    createdDate: data.payment.createdDate,
-                    currency: data.payment.currency,
-                    price: data.payment.price,
-                };
-                var childNodes = [];
-                for (var k in paymentDetail) {
-                    var node = $('<div></div>');
-                    node.addClass('panel-body');
-                    node.text(k + ' : ' + paymentDetail[k]);
-                    $('#result-panel').append(node);
-                }
+        $(function() {
+            $('#query-form').on('submit', function(evt) {
+                evt.preventDefault();
+                $('#result-panel').empty();
+                var checkAPI = '/payment?';
+                checkAPI += 'paymentId=' + $('#payment-id').val();
+                checkAPI += '&firstName=' + $('#first-name').val();
+                checkAPI += '&lastName=' + $('#last-name').val();
+                $.get(checkAPI, function(data) {
+                    if (data.status != 'success') {
+                        alert(data.message);
+                        return;
+                    };
+                    var paymentDetail = {
+                        paymentId: data.payment._id,
+                        firstName: data.payment.firstName,
+                        phone: data.payment.phone,
+                        lastName: data.payment.lastName,
+                        createdDate: data.payment.createdDate,
+                        currency: data.payment.currency,
+                        price: data.payment.price,
+                    };
+                    var childNodes = [];
+                    for (var k in paymentDetail) {
+                        var node = $('<div></div>');
+                        node.addClass('panel-body');
+                        node.text(k + ' : ' + paymentDetail[k]);
+                        $('#result-panel').append(node);
+                    }
 
-                return;
-            });
-    	})
-    })
+                    return;
+                });
+            })
+        })
     </script>
 </head>
 
